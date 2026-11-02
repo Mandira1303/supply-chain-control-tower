@@ -1,0 +1,5 @@
+# Superset settings for the Retail & Supply Chain Control Tower (local demo only)
+SECRET_KEY = "change-me-local-demo-only-7f3a9c1e5b2d4a60"
+FEATURE_FLAGS = {"ENABLE_TEMPLATE_PROCESSING": True}
+WTF_CSRF_ENABLED = True
+ROW_LIMIT = 50000

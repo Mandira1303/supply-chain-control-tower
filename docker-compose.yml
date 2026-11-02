@@ -1,0 +1,73 @@
+# Retail & Supply Chain Control Tower - local stack
+# Start:  docker compose up -d --build        Stop:  docker compose down
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_PASSWORD: ${SC_DB_PASSWORD}
+      POSTGRES_DB: supply_chain
+    ports:
+      - "5433:5432"          # from your laptop use localhost:5433
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d supply_chain"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  airflow:
+    build: .
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8080:8080"          # Airflow UI: http://localhost:8080  (admin / admin)
+    environment:
+      AIRFLOW__CORE__LOAD_EXAMPLES: "False"
+      AIRFLOW__CORE__EXECUTOR: SequentialExecutor
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: sqlite:////opt/airflow/db/airflow.db
+      SC_DB_HOST: postgres
+      SC_DB_PORT: "5432"
+      SC_DB_PASSWORD: ${SC_DB_PASSWORD}
+    volumes:
+      - ./airflow/dags:/opt/airflow/dags
+      - airflow_db:/opt/airflow/db
+    command:
+      - bash
+      - -c
+      - >
+        airflow db migrate &&
+        (airflow users create --username admin --password admin --firstname Admin
+        --lastname User --role Admin --email admin@example.com || true) &&
+        (airflow webserver --port 8080 &) &&
+        exec airflow scheduler
+
+  superset:
+    build:
+      context: .
+      dockerfile: Dockerfile.superset
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8088:8088"          # Superset UI: http://localhost:8088  (admin / admin)
+    environment:
+      SUPERSET_CONFIG_PATH: /app/pythonpath/superset_config.py
+    volumes:
+      - ./superset/superset_config.py:/app/pythonpath/superset_config.py
+      - superset_home:/app/superset_home
+    command:
+      - bash
+      - -c
+      - >
+        superset db upgrade &&
+        (superset fab create-admin --username admin --firstname Admin --lastname User
+        --email admin@example.com --password admin || true) &&
+        superset init &&
+        /usr/bin/run-server.sh
+
+volumes:
+  pgdata:
+  airflow_db:
+  superset_home:

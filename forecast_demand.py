@@ -29,7 +29,7 @@ HORIZON = 24 * 7          # forecast 7 days ahead, hourly
 def load_from_db():
     import psycopg2
     password = os.getenv("PGPASSWORD") or getpass("Enter your PostgreSQL password (typing is hidden): ")
-    conn = psycopg2.connect(host="localhost", port=5432, user="postgres",
+    conn = psycopg2.connect(host=os.getenv("PGHOST", "localhost"), port=int(os.getenv("PGPORT", "5432")), user="postgres",
                             password=password, dbname="supply_chain")
     cur = conn.cursor()
     cur.execute("SELECT ts, product_id, SUM(units_sold) AS units_sold "

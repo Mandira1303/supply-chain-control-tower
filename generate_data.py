@@ -118,7 +118,7 @@ else:
     from sqlalchemy import create_engine
     password = os.getenv("PGPASSWORD") or getpass("Enter your PostgreSQL password (typing is hidden): ")
     # create the database if it does not exist yet
-    admin = psycopg2.connect(host="localhost", user="postgres", password=password, dbname="postgres")
+    admin = psycopg2.connect(host=os.getenv("PGHOST", "localhost"), port=int(os.getenv("PGPORT", "5432")), user="postgres", password=password, dbname="postgres")
     admin.autocommit = True
     cur = admin.cursor()
     cur.execute("SELECT 1 FROM pg_database WHERE datname = %s", (DB_NAME,))
@@ -126,7 +126,7 @@ else:
         cur.execute(f"CREATE DATABASE {DB_NAME}")
         print(f"Created database {DB_NAME}")
     admin.close()
-    engine = create_engine(f"postgresql+psycopg2://postgres:{quote_plus(password)}@localhost:5432/{DB_NAME}")
+    engine = create_engine(f"postgresql+psycopg2://postgres:{quote_plus(password)}@{os.getenv('PGHOST', 'localhost')}:{os.getenv('PGPORT', '5432')}/{DB_NAME}")
     for name, df in tables.items():
         df.to_sql(name, engine, if_exists="replace", index=False, chunksize=20000, method="multi")
         print(f"{name}: {len(df):,} rows loaded")

@@ -27,7 +27,7 @@ CONTAMINATION = 0.003      # expected share of anomalies for Isolation Forest
 def load_from_db():
     import psycopg2
     password = os.getenv("PGPASSWORD") or getpass("Enter your PostgreSQL password (typing is hidden): ")
-    conn = psycopg2.connect(host="localhost", port=5432, user="postgres",
+    conn = psycopg2.connect(host=os.getenv("PGHOST", "localhost"), port=int(os.getenv("PGPORT", "5432")), user="postgres",
                             password=password, dbname="supply_chain")
     cur = conn.cursor()
     cur.execute("SELECT ts, store_id, product_id, units_sold, units_unmet, stock_level "
