@@ -30,6 +30,12 @@ services:
       SC_DB_HOST: postgres
       SC_DB_PORT: "5432"
       SC_DB_PASSWORD: ${SC_DB_PASSWORD}
+      SLACK_WEBHOOK_URL: ${SLACK_WEBHOOK_URL:-}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      ALERT_EMAIL_TO: ${ALERT_EMAIL_TO:-}
     volumes:
       - ./airflow/dags:/opt/airflow/dags
       - airflow_db:/opt/airflow/db
@@ -71,3 +77,4 @@ volumes:
   pgdata:
   airflow_db:
   superset_home:
+

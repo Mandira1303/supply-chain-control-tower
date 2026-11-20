@@ -1,4 +1,6 @@
 venv/
 __pycache__/
 *.pyc
-.envdocker compose up -d --build
+.env
+data/
+.pytest_cache/
